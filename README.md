@@ -1,10 +1,7 @@
 # upcloud_api
 
-home  :: FIX (url)
-code  :: FIX (url)
-rdoc  :: FIX (url)
-bugs  :: FIX (url)
-... etc ...
+[Homepage](https://github.com/Smarre/upcloud_api)
+[Documentation](http://www.rubydoc.info/gems/upcloud_api)
 
 ## Description
 
@@ -22,12 +19,14 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 
 ## Synopsis
 
-  FIX (code sample of usage)
+    require "upcloud_api"
+    api = UpcloudApi.new "usernya", "passwordnya"
+    api.delete_server "b6ee337e-a7d8-4d27-8ed6-06e26c23265d"
 
 ## Requirements
 
-* Ruby
-* Internet
+* Ruby 2.1 or larger (may work with older releases, but no guarantee)
+* Account to Upcloud service
 
 ## Install
 
@@ -35,14 +34,10 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 
 ## Developers
 
-After checking out the source, run:
-
-  $ rake newb
-
-This task will install any missing dependencies, run the tests/specs,
-and generate the RDoc.
-
-Actually don’t run that, it will just whine to you.
+I’ve only created actions I personally need, for my own project. In case you
+need some other actions, please open a pull request and I’ll merge it,
+or if you have greater plans for this project, I can make you co-author
+or just transfer the project to you.
 
 ## License
 
