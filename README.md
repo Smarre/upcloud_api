@@ -12,7 +12,6 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 
 * Basic server management calls done
 
-
 ### Known problems
 
 * Many actions, most notably storage actions are missing
