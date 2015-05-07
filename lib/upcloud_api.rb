@@ -75,26 +75,28 @@ class UpcloudApi
     #
     # Calls POST /1.2/server
     #
-    # @param template_uuid Uuid from UpcloudApi#templates (a disk’s UUID)
+    # Storage devices should be array of hashes containing following data:
     #
-    # Returns HTTParty response bodys
-    def create_server template_uuid, disk_name
+    #   {
+    #   "action" => "clone" # Can be "create", "clone" or "attach"
+    #   "storage" => template_uuid, # Should be passed only for "clone" or "attach"
+    #   "title" => disk_name # Name of the storage
+    #   }
+    #
+    # Returns HTTParty response
+    def create_server zone: "fi-hel1", title:, hostname:, core_number: 1, memory_amount: 1024, storage_devices:
         data = {
             "server" => {
-                "zone" => "",
-                "title" => "",
-                "hostname" => "",
-                "core_number" => "",
-                "memory_amount" => "",
-                "storage_devices" => [
-                    "action" => "clone",
-                    "storage" => template_uuid,
-                    "title" => disk_name
-                ]
+                "zone" => zone,
+                "title" => title,
+                "hostname" => hostname,
+                "core_number" => core_number,
+                "memory_amount" => memory_amount,
+                "storage_devices" => storage_devices
             }
         }
 
-        json = JSON.encode data
+        json = JSON.generate data
         response = post "server", json
 
         response
@@ -110,7 +112,7 @@ class UpcloudApi
     # @param params [Hash] Hash of params that will be passed to be changed.
     def modify_server server_uuid, params
         data = { "server" => params }
-        json = JSON.encode data
+        json = JSON.generate data
         response = put "server/#{server_uuid}", json
 
         response
@@ -157,7 +159,7 @@ class UpcloudApi
         }
         data["stop_server"]["timeout"] = timeout unless timeout.nil?
 
-        json = JSON.encode data
+        json = JSON.generate data
 
         response = post "server/#{server_uuid}/stop", json
 
@@ -185,7 +187,7 @@ class UpcloudApi
         }
         data["stop_server"]["timeout"] = timeout unless timeout.nil?
 
-        json = JSON.encode data
+        json = JSON.generate data
 
         response = post "server/#{server_uuid}/restart", json
 
@@ -199,14 +201,14 @@ class UpcloudApi
     end
 
     def post action, body = ""
-        HTTParty.post "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth, body: body
+        HTTParty.post "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth, body: body, headers: { "Content-Type" => "application/json" }
     end
 
     def put action, body = ""
-        HTTParty.put "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth, body: body
+        HTTParty.put "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth, body: body, headers: { "Content-Type" => "application/json" }
     end
 
     def delete action, body = ""
-        HTTParty.delete "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth
+        HTTParty.delete "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth, headers: { "Content-Type" => "application/json" }
     end
 end

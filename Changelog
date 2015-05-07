@@ -1,3 +1,7 @@
+=== 1.1.0 / 2015-05-07
+
+* Make create_server more sane (Samu Voutilainen)
+
 === 1.0.1 / 2015-05-07
 
 * Fix a syntax error... (Samu Voutilainen)
