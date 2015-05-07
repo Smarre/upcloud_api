@@ -80,7 +80,7 @@ class UpcloudApi
     # Returns HTTParty response bodys
     def create_server template_uuid, disk_name
         data = {
-            server = {
+            "server" => {
                 "zone" => "",
                 "title" => "",
                 "hostname" => "",
