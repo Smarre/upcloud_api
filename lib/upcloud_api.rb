@@ -80,7 +80,8 @@ class UpcloudApi
     #   {
     #   "action" => "clone" # Can be "create", "clone" or "attach"
     #   "storage" => template_uuid, # Should be passed only for "clone" or "attach"
-    #   "title" => disk_name # Name of the storage
+    #   "title" => disk_name # Name of the storage,
+    #   "tier" => "maxiops" # No sense using HDD any more
     #   }
     #
     # Returns HTTParty response
@@ -92,7 +93,7 @@ class UpcloudApi
                 "hostname" => hostname,
                 "core_number" => core_number,
                 "memory_amount" => memory_amount,
-                "storage_devices" => storage_devices
+                "storage_devices" => { "storage_device" => storage_devices }
             }
         }
 
