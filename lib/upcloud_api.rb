@@ -152,7 +152,10 @@ class UpcloudApi
     # @param server_uuid UUID of the server
     # @param type Type of the shutdown. Available types are :hard and :soft. Defaults to :soft.
     # @param timeout Time after server will be hard stopped if it didn’t close cleanly. Only affects :soft type.
-    def start_server server_uuid, type: :soft, timeout: nil
+    # @param asynchronous If false, this call will wait until the server has really stopped.
+    #
+    # Raises Timeout::Error in case server does not shut down in 300 seconds in non-asynchronous mode.
+    def stop_server server_uuid, type: :soft, timeout: nil, asynchronous: false
         data = {
             "stop_server" => {
                 "stop_type" => type.to_s
@@ -164,7 +167,14 @@ class UpcloudApi
 
         response = post "server/#{server_uuid}/stop", json
 
-        response
+        return response if asynchronous
+
+        Timeout 300 do
+            loop do
+                details = server_details server_uuid
+                return response if details["server"]["state"] == "stopped"
+            end
+        end
     end
 
     # Restarts down a server that is currently running
@@ -180,7 +190,7 @@ class UpcloudApi
     # @param timeout Time after server will be hard stopped if it didn’t close cleanly. Only affects :soft type.
     # @param timeout_action What will happen when timeout happens. :destroy hard stops the server and :ignore makes
     # server if timeout happens. Default is :ignore.
-    def start_server server_uuid, type: :soft, timeout: nil, timeout_action: :ignore
+    def restart_server server_uuid, type: :soft, timeout: nil, timeout_action: :ignore
         data = {
             "stop_server" => {
                 "stop_type" => type.to_s
