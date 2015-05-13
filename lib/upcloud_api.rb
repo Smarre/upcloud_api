@@ -1,4 +1,6 @@
 
+require "timeout"
+
 require "httparty"
 
 class UpcloudApi
@@ -169,7 +171,7 @@ class UpcloudApi
 
         return response if asynchronous
 
-        Timeout 300 do
+        Timeout::timeout 300 do
             loop do
                 details = server_details server_uuid
                 return response if details["server"]["state"] == "stopped"
@@ -201,6 +203,221 @@ class UpcloudApi
         json = JSON.generate data
 
         response = post "server/#{server_uuid}/restart", json
+
+        response
+    end
+
+    # Lists all storages or storages matching to given type.
+    #
+    # Calls GET /1.2/storage or /1.2/storage/#{type}
+    #
+    # Available types:
+    # - public
+    # - private
+    # - normal
+    # - backup
+    # - cdrom
+    # - template
+    # - favorite
+    #
+    # @param type Type of the storages to be returned on nil
+    def storages type: nil
+        response = get(type && "storage/#{type}" || "storage")
+        data = JSON.parse response.body
+        data
+    end
+
+    # Shows detailed information of single storage.
+    #
+    # Calls GET /1.2/storage/#{uuid}
+    #
+    # @param storage_uuid UUID of the storage
+    def storage_details storage_uuid
+        response = get "storage/#{storage_uuid}"
+        data = JSON.parse response.body
+        data
+    end
+
+    # Creates new storage.
+    #
+    # Calls POST /1.2/storage
+    #
+    # backup_rule should be hash with following attributes:
+    # - interval # allowed values: daily / mon / tue / wed / thu / fri / sat / sun
+    # - time # allowed values: 0000-2359
+    # - retention # How many days backup will be kept. Allowed values: 1-1095
+    #
+    # @param size Size of the storage in gigabytes
+    # @param tier Type of the disk. maxiops is SSD powered disk, other allowed value is "hdd"
+    # @param title Name of the disk
+    # @param zone Where the disk will reside. Needs to be within same zone with the server
+    # @param backup_rule Hash of backup information. If not given, no backups will be automatically created.
+    def create_storage size:, tier: "maxiops", title:, zone: "fi-hel1", backup_rule: nil
+        data = {
+            "storage" => {
+                "size" => size,
+                "tier" => tier,
+                "title" => title,
+                "zone" => zone,
+                "backup_rule" => backup_rule
+            }
+        }
+
+        json = JSON.generate data
+
+        response = post "storage", json
+
+        response
+    end
+
+    # Modifies existing storage.
+    #
+    # Calls PUT /1.2/storage/#{uuid}
+    #
+    # backup_rule should be hash with following attributes:
+    # - interval # allowed values: daily / mon / tue / wed / thu / fri / sat / sun
+    # - time # allowed values: 0000-2359
+    # - retention # How many days backup will be kept. Allowed values: 1-1095
+    #
+    # @param storage_uuid UUID of the storage that will be modified
+    # @param size Size of the storage in gigabytes
+    # @param title Name of the disk
+    # @param backup_rule Hash of backup information. If not given, no backups will be automatically created.
+    def modify_storage storage_uuid, size:, title:, backup_rule: nil
+        data = {
+            "storage" => {
+                "size" => size,
+                "title" => title,
+                "backup_rule" => backup_rule
+            }
+        }
+
+        json = JSON.generate data
+
+        response = put "storage/#{storage_uuid}", json
+
+        response
+    end
+
+    # Clones existing storage.
+    #
+    # This operation is asynchronous.
+    #
+    # Calls POST /1.2/storage/#{uuid}/clone
+    #
+    # backup_rule should be hash with following attributes:
+    # - interval # allowed values: daily / mon / tue / wed / thu / fri / sat / sun
+    # - time # allowed values: 0000-2359
+    # - retention # How many days backup will be kept. Allowed values: 1-1095
+    #
+    # @param storage_uuid UUID of the storage that will be modified
+    # @param tier Type of the disk. maxiops is SSD powered disk, other allowed value is "hdd"
+    # @param title Name of the disk
+    # @param zone Where the disk will reside. Needs to be within same zone with the server
+    def clone_storage storage_uuid, zone: "fi-hel1", title:, tier: "maxiops"
+        data = {
+            "storage" => {
+                "zone" => zone,
+                "title" => title,
+                "tier" => tier
+            }
+        }
+
+        json = JSON.generate data
+
+        response = post "storage/#{storage_uuid}/clone", json
+
+        response
+    end
+
+    # Attaches a storage to a server. Server must be stopped before the storage can be attached.
+    #
+    # Calls POST /1.2/server/#{server_uuid}/storage/attach
+    #
+    # Valid values for address are: ide[01]:[01] / scsi:0:[0-7] / virtio:[0-7]
+    #
+    # @param type Type of the disk. Valid values are "disk" and "cdrom".
+    # @param address Address where the disk will be attached to. Defaults to next available address.
+    # @param server_uuid UUID of the server where the disk will be attached to.
+    # @param storage_uuid UUID of the storage that will be attached.
+    def attach_storage type: "disk", address: nil, server_uuid:, storage_uuid:
+        data = {
+            "storage_device" => {
+                "type" => type,
+                "address" => address,
+                "storage" => storage_uuid
+            }
+        }
+
+        json = JSON.generate data
+
+        response = post "server/#{server_uuid}/storage/attach", json
+
+        response
+    end
+
+    # Detaches storage from a server.  Server must be stopped before the storage can be detached.
+    #
+    # Calls POST /1.2/server/#{server_uuid}/storage/detach
+    #
+    # @param address Address where the storage that will be detached resides.
+    def detach_storage address
+        data = {
+            "storage_device" => {
+                "address" => address
+            }
+        }
+
+        json = JSON.generate data
+
+        response = post "server/#{server_uuid}/storage/detach", json
+
+        response
+    end
+
+    # Creates backup from a storage.
+    #
+    # This operation is asynchronous.
+    #
+    # Calls /1.2/storage/#{uuid}/backup
+    #
+    # @param storage_uuid UUID of the storage to be cloned
+    # @param title Name of the backup
+    def create_backup storage_uuid, title:
+        data = {
+            "storage" => {
+                "title" => title
+            }
+        }
+
+        json = JSON.generate data
+
+        response = post "storage/#{storage_uuid}/backup", json
+
+        response
+    end
+
+    # Restores a backup.
+    #
+    # If the storage is attached to server, the server must first be stopped.
+    #
+    # Calls /1.2/storage/#{uuid}/restore.
+    #
+    # @param storage_uuid TODO: is this supposed to be UUID of the storage or the backup?
+    def create_backup storage_uuid
+        response = post "storage/#{storage_uuid}/restore"
+
+        response
+    end
+
+    # Deletes a storage.
+    #
+    # The storage must be in "online" state and it must not be attached to any server.
+    # Backups will not be deleted.
+    #
+    # @param storage_uuid UUID of the storage that will be deleted.
+    def delete_storage storage_uuid
+        response = delete "storage/#{storage_uuid}"
 
         response
     end

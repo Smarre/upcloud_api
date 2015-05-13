@@ -11,10 +11,15 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 ## Features
 
 * Basic server management calls done
+* Implements API version 1.2.
 
 ### Known problems
 
-* Many actions, most notably storage actions are missing
+* Some actions are still missing, most notably IP actions
+* Most actions are mostly just wrappers over the API for convenience,
+with no good documentation or integration.
+* Load/eject CDROM not done.
+* No methods for favorites
 
 ## Synopsis
 
