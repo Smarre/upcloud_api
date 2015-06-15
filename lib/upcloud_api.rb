@@ -86,8 +86,12 @@ class UpcloudApi
     #   "tier" => "maxiops" # No sense using HDD any more
     #   }
     #
+    # ip_addresses should be an array containing :public, :private and/or :ipv6. It defaults to
+    # :all, which means the server will get public IPv4, private IPv4 and public IPv6 addresses.
+    #
     # Returns HTTParty response
-    def create_server zone: "fi-hel1", title:, hostname:, core_number: 1, memory_amount: 1024, storage_devices:
+    def create_server zone: "fi-hel1", title:, hostname:, core_number: 1, memory_amount: 1024, storage_devices:,
+            ip_addresses: :all
         data = {
             "server" => {
                 "zone" => zone,
@@ -98,6 +102,16 @@ class UpcloudApi
                 "storage_devices" => { "storage_device" => storage_devices }
             }
         }
+
+        if ip_addresses != :all
+            ips = []
+            ips << { "access" => "public", "family" => "IPv4" } if ip_addresses.include? :public
+            ips << { "access" => "private", "family" => "IPv4" } if ip_addresses.include? :private
+            ips << { "access" => "public", "family" => "IPv6" } if ip_addresses.include? :ipv6
+
+            data["server"]["ip_addresses"] = {}
+            data["server"]["ip_addresses"]["ip_address"] = ips
+        end
 
         json = JSON.generate data
         response = post "server", json
