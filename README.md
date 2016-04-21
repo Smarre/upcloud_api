@@ -19,7 +19,6 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 * Most actions are mostly just wrappers over the API for convenience,
 with no good documentation or integration.
 * Load/eject CDROM not done.
-* No methods for favorites
 
 ## Synopsis
 
@@ -47,12 +46,12 @@ or just transfer the project to you.
 
 Export your UpCloud API account username and password as environment variables:
 
-     export UPCLOUD_USERNAME="XXX"
-     export UPCLOUD_PASSWORD="YYY"
+    export UPCLOUD_USERNAME="XXX"
+    export UPCLOUD_PASSWORD="YYY"
 
 ## Testing
 
-There is bunch of unit tests implemented with rspec, you can run the suite with
+There is bunch of unit tests implemented with rspec, you can run the suite with:
 
     rspec --format documentation
 
