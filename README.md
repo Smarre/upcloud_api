@@ -55,15 +55,14 @@ There is bunch of unit tests implemented with rspec, you can run the suite with:
 
     rspec --format documentation
 
-RUNNING TESTS CONSUMES YOUR CREDITS
+WARNING: RUNNING TESTS CONSUMES YOUR CREDITS
 
 ## License
 
 (The MIT License)
 
 Copyright (c) 2016 Qentinel Group
-
-Copyright (c) 2015 Samu Voutilainen
+Copyright (c) 2016 Samu Voutilainen
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
