@@ -1,3 +1,3 @@
 class UpcloudApi
-  VERSION = "1.3.0".freeze
+  VERSION = "1.5.0".freeze
 end
