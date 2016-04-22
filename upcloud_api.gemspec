@@ -12,8 +12,7 @@ Gem::Specification.new do |s|
   s.files       = Dir.glob("lib/**/*.rb")
   s.homepage    = "https://github.com/Smarre/upcloud_api"
   s.license     = "MIT"
-  #s.cert_chain  = ["certs/public.pem"]
-  #s.signing_key = "certs/private.pem"
+  # s.cert_chain  = ["certs/public.pem"]
+  # s.signing_key = "certs/private.pem"
   s.add_runtime_dependency "httparty", "~> 0.13"
 end
-
