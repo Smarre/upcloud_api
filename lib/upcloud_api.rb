@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-# Copyright (c) 2016 Qentinel Group
-#
-# Copyright (c) 2015 Samu Voutilainen
-#
-# License: see README.md
-
 require "timeout"
 
 require "httparty"
