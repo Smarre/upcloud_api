@@ -462,11 +462,11 @@ class UpcloudApi
   #
   # If the storage is attached to server, the server must first be stopped.
   #
-  # Calls /1.2/storage/#{uuid}/restore.
+  # Calls /1.2/storage/#{backup_uuid}/restore.
   #
-  # @param storage_uuid UUID of the backup
-  def restore_backup(storage_uuid)
-    response = post "storage/#{storage_uuid}/restore"
+  # @param backup_uuid UUID of the backup
+  def restore_backup(backup_uuid)
+    response = post "storage/#{backup_uuid}/restore"
 
     response
   end
