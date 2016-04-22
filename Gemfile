@@ -4,6 +4,6 @@ gem "httparty"
 
 group :test do
     gem "cucumber"
-    gem "rspec-expectations"
+    gem "rspec"
 end
 

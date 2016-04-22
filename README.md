@@ -19,7 +19,6 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 * Most actions are mostly just wrappers over the API for convenience,
 with no good documentation or integration.
 * Load/eject CDROM not done.
-* No methods for favorites
 
 ## Synopsis
 
@@ -43,9 +42,26 @@ need some other actions, please open a pull request and I’ll merge it,
 or if you have greater plans for this project, I can make you co-author
 or just transfer the project to you.
 
+## API account credentials
+
+Export your UpCloud API account username and password as environment variables:
+
+    export UPCLOUD_USERNAME="XXX"
+    export UPCLOUD_PASSWORD="YYY"
+
+## Testing
+
+There is bunch of unit tests implemented with rspec, you can run the suite with:
+
+    rspec --format documentation
+
+RUNNING TESTS CONSUMES YOUR CREDITS
+
 ## License
 
 (The MIT License)
+
+Copyright (c) 2016 Qentinel Group
 
 Copyright (c) 2015 Samu Voutilainen
 

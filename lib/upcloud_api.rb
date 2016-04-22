@@ -1,8 +1,15 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2016 Qentinel Group
+#
+# Copyright (c) 2015 Samu Voutilainen
+#
+# License: see README.md
 
 require "timeout"
 
 require "httparty"
 
+# Class to serve as a Ruby API for the UpCloud HTTP API
 class UpcloudApi
   # @param user [String] Upcloud API account
   # @param password [String] Upcloud API password
@@ -25,13 +32,21 @@ class UpcloudApi
     response.code == 200
   end
 
+  # Returns available server configurations.
+  #
+  # Calls GET /1.2/server_size
+  def server_configurations
+    response = get "server_size"
+    response["server_sizes"]["server_size"]
+  end
+
   # Returns available credits.
   #
   # Calls GET /1.2/acccount
   def account_information
     response = get "account"
     data = JSON.parse response.body
-    data["acccount"]["credits"]
+    data["account"]["credits"]
   end
 
   # Lists servers associated with the account
@@ -89,8 +104,8 @@ class UpcloudApi
   # :all, which means the server will get public IPv4, private IPv4 and public IPv6 addresses.
   #
   # Returns HTTParty response
-  def create_server(zone: "fi-hel1", title:, hostname:, core_number: 1, memory_amount: 1024, storage_devices:,
-                    ip_addresses: :all)
+  def create_server(zone: "fi-hel1", title:, hostname:, core_number: 1,
+                    memory_amount: 1024, storage_devices:, ip_addresses: :all)
     data = {
       "server" => {
         "zone" => zone,
@@ -114,7 +129,6 @@ class UpcloudApi
 
     json = JSON.generate data
     response = post "server", json
-
     response
   end
 
@@ -160,16 +174,22 @@ class UpcloudApi
   #
   # Calls POST /1.2/server/#{uuid}/stop
   #
-  # Hard shutdown means practically same as taking the power cable off from the computer.
-  # Soft shutdown sends ACPI signal to the server, which should then automatically handle shutdown routines by itself.
-  # If timeout is given, server will be forcibly shut down after the timeout has expired.
+  # Hard shutdown means practically same as taking the power cable
+  # off from the computer. Soft shutdown sends ACPI signal to the server,
+  # which should then automatically handle shutdown routines by itself.
+  # If timeout is given, server will be forcibly shut down after the
+  # timeout has expired.
   #
   # @param server_uuid UUID of the server
-  # @param type Type of the shutdown. Available types are :hard and :soft. Defaults to :soft.
-  # @param timeout Time after server will be hard stopped if it didn’t close cleanly. Only affects :soft type.
-  # @param asynchronous If false, this call will wait until the server has really stopped.
+  # @param type Type of the shutdown. Available types are :hard and :soft.
+  # Defaults to :soft.
+  # @param timeout Time after server will be hard stopped if it did not
+  # close cleanly. Only affects :soft type.
+  # @param asynchronous If false, this call will wait until the server
+  # has really stopped.
   #
-  # Raises Timeout::Error in case server does not shut down in 300 seconds in non-asynchronous mode.
+  # Raises Timeout::Error in case server does not shut down in 300
+  # seconds in non-asynchronous mode.
   def stop_server(server_uuid, type: :soft, timeout: nil, asynchronous: false)
     data = {
       "stop_server" => {
@@ -187,31 +207,39 @@ class UpcloudApi
     Timeout.timeout 300 do
       loop do
         details = server_details server_uuid
+        return response if details["server"].nil?
         return response if details["server"]["state"] == "stopped"
       end
     end
   end
 
-  # Restarts down a server that is currently running
+  # Restarts a server that is currently running
   #
   # Calls POST /1.2/server/#{uuid}/restart
   #
-  # Hard shutdown means practically same as taking the power cable off from the computer.
-  # Soft shutdown sends ACPI signal to the server, which should then automatically handle shutdown routines by itself.
-  # If timeout is given, server will be forcibly shut down after the timeout has expired.
+  # Hard shutdown means practically same as taking the power cable
+  # off from the computer. Soft shutdown sends ACPI signal to the server,
+  # which should then automatically handle shutdown routines by itself.
+  # If timeout is given, server will be forcibly shut down after the
+  # timeout has expired.
   #
   # @param server_uuid UUID of the server
-  # @param type Type of the shutdown. Available types are :hard and :soft. Defaults to :soft.
-  # @param timeout Time after server will be hard stopped if it didn’t close cleanly. Only affects :soft type.
-  # @param timeout_action What will happen when timeout happens. :destroy hard stops the server and :ignore makes
-  # server if timeout happens. Default is :ignore.
-  def restart_server(server_uuid, type: :soft, timeout: nil, timeout_action: :ignore)
+  # @param type Type of the shutdown. Available types are :hard and :soft.
+  # Defaults to :soft.
+  # @param timeout Time after server will be hard stopped if it did not
+  # close cleanly. Only affects :soft type.
+  # @param timeout_action What will happen when timeout happens.
+  # :destroy hard stops the server and :ignore stops the operation
+  # if timeout happens. Default is :ignore.
+  def restart_server(server_uuid, type: :soft, timeout: nil,
+                     timeout_action: :ignore)
     data = {
-      "stop_server" => {
-        "stop_type" => type.to_s
+      "restart_server" => {
+        "stop_type" => type.to_s,
+        "timeout_action" => timeout_action
       }
     }
-    data["stop_server"]["timeout"] = timeout unless timeout.nil?
+    data["restart_server"]["timeout"] = timeout unless timeout.nil?
 
     json = JSON.generate data
 
@@ -261,23 +289,26 @@ class UpcloudApi
   # - retention # How many days backup will be kept. Allowed values: 1-1095
   #
   # @param size Size of the storage in gigabytes
-  # @param tier Type of the disk. maxiops is SSD powered disk, other allowed value is "hdd"
+  # @param tier Type of the disk. maxiops is SSD powered disk, other
+  # allowed value is "hdd"
   # @param title Name of the disk
-  # @param zone Where the disk will reside. Needs to be within same zone with the server
-  # @param backup_rule Hash of backup information. If not given, no backups will be automatically created.
-  def create_storage(size:, tier: "maxiops", title:, zone: "fi-hel1", backup_rule: nil)
+  # @param zone Where the disk will reside. Needs to be within same zone
+  # with the server
+  # @param backup_rule Hash of backup information. If not given, no
+  # backups will be automatically created.
+  def create_storage(size:, tier: "maxiops", title:, zone: "fi-hel1",
+                     backup_rule: nil)
     data = {
       "storage" => {
         "size" => size,
         "tier" => tier,
         "title" => title,
-        "zone" => zone,
-        "backup_rule" => backup_rule
+        "zone" => zone
       }
     }
+    data["storage"]["backup_rule"] = backup_rule unless backup_rule.nil?
 
     json = JSON.generate data
-
     response = post "storage", json
 
     response
@@ -295,15 +326,16 @@ class UpcloudApi
   # @param storage_uuid UUID of the storage that will be modified
   # @param size Size of the storage in gigabytes
   # @param title Name of the disk
-  # @param backup_rule Hash of backup information. If not given, no backups will be automatically created.
+  # @param backup_rule Hash of backup information. If not given, no
+  # backups will be automatically created.
   def modify_storage(storage_uuid, size:, title:, backup_rule: nil)
     data = {
       "storage" => {
         "size" => size,
-        "title" => title,
-        "backup_rule" => backup_rule
+        "title" => title
       }
     }
+    data["storage"]["backup_rule"] = backup_rule unless backup_rule.nil?
 
     json = JSON.generate data
 
@@ -318,15 +350,12 @@ class UpcloudApi
   #
   # Calls POST /1.2/storage/#{uuid}/clone
   #
-  # backup_rule should be hash with following attributes:
-  # - interval # allowed values: daily / mon / tue / wed / thu / fri / sat / sun
-  # - time # allowed values: 0000-2359
-  # - retention # How many days backup will be kept. Allowed values: 1-1095
-  #
   # @param storage_uuid UUID of the storage that will be modified
-  # @param tier Type of the disk. maxiops is SSD powered disk, other allowed value is "hdd"
+  # @param tier Type of the disk. maxiops is SSD powered disk, other
+  # allowed value is "hdd"
   # @param title Name of the disk
-  # @param zone Where the disk will reside. Needs to be within same zone with the server
+  # @param zone Where the disk will reside. Needs to be within same zone
+  # with the server
   def clone_storage(storage_uuid, zone: "fi-hel1", title:, tier: "maxiops")
     data = {
       "storage" => {
@@ -343,24 +372,48 @@ class UpcloudApi
     response
   end
 
-  # Attaches a storage to a server. Server must be stopped before the storage can be attached.
+  # Templatizes existing storage.
+  #
+  # This operation is asynchronous.
+  #
+  # Calls POST /1.2/storage/#{uuid}/templatize
+  #
+  # @param storage_uuid UUID of the storage that will be templatized
+  # @param title Name of the template storage
+  def templatize_storage(storage_uuid, title:)
+    data = {
+      "storage" => {
+        "title" => title
+      }
+    }
+
+    json = JSON.generate data
+
+    response = post "storage/#{storage_uuid}/templatize", json
+
+    response
+  end
+
+  # Attaches a storage to a server. Server must be stopped before the
+  # storage can be attached.
   #
   # Calls POST /1.2/server/#{server_uuid}/storage/attach
   #
   # Valid values for address are: ide[01]:[01] / scsi:0:[0-7] / virtio:[0-7]
   #
-  # @param type Type of the disk. Valid values are "disk" and "cdrom".
-  # @param address Address where the disk will be attached to. Defaults to next available address.
   # @param server_uuid UUID of the server where the disk will be attached to.
   # @param storage_uuid UUID of the storage that will be attached.
-  def attach_storage(type: "disk", address: nil, server_uuid:, storage_uuid:)
+  # @param type Type of the disk. Valid values are "disk" and "cdrom".
+  # @param address Address where the disk will be attached to. Defaults
+  # to next available address.
+  def attach_storage(server_uuid, storage_uuid:, type: "disk", address: nil)
     data = {
       "storage_device" => {
         "type" => type,
-        "address" => address,
         "storage" => storage_uuid
       }
     }
+    data["storage_device"]["address"] = address unless address.nil?
 
     json = JSON.generate data
 
@@ -369,12 +422,14 @@ class UpcloudApi
     response
   end
 
-  # Detaches storage from a server.  Server must be stopped before the storage can be detached.
+  # Detaches storage from a server. Server must be stopped before the
+  # storage can be detached.
   #
   # Calls POST /1.2/server/#{server_uuid}/storage/detach
   #
+  # @param server_uuid UUID of the server from which to detach the storage.
   # @param address Address where the storage that will be detached resides.
-  def detach_storage(address)
+  def detach_storage(server_uuid, address:)
     data = {
       "storage_device" => {
         "address" => address
@@ -394,7 +449,7 @@ class UpcloudApi
   #
   # Calls /1.2/storage/#{uuid}/backup
   #
-  # @param storage_uuid UUID of the storage to be cloned
+  # @param storage_uuid UUID of the storage to be backed-up
   # @param title Name of the backup
   def create_backup(storage_uuid, title:)
     data = {
@@ -416,16 +471,39 @@ class UpcloudApi
   #
   # Calls /1.2/storage/#{uuid}/restore.
   #
-  # @param storage_uuid TODO: is this supposed to be UUID of the storage or the backup?
-  def create_backup(storage_uuid)
+  # @param storage_uuid UUID of the backup
+  def restore_backup(storage_uuid)
     response = post "storage/#{storage_uuid}/restore"
+
+    response
+  end
+
+  # Adds storage to favorites
+  #
+  # Calls POST /1.2/storage/#{storage_uuid}/favorite.
+  #
+  # @param storage_uuid UUID of the storage to be included in favorites
+  def favorite_storage(storage_uuid)
+    response = post "storage/#{storage_uuid}/favorite"
+
+    response
+  end
+
+  # Removes storage to favorites
+  #
+  # Calls POST /1.2/storage/#{storage_uuid}/favorite.
+  #
+  # @param storage_uuid UUID of the storage to be removed from favorites
+  def defavorite_storage(storage_uuid)
+    response = delete "storage/#{storage_uuid}/favorite"
 
     response
   end
 
   # Deletes a storage.
   #
-  # The storage must be in "online" state and it must not be attached to any server.
+  # The storage must be in "online" state and it must not be attached to
+  # any server.
   # Backups will not be deleted.
   #
   # @param storage_uuid UUID of the storage that will be deleted.
@@ -442,14 +520,22 @@ class UpcloudApi
   end
 
   def post(action, body = "")
-    HTTParty.post "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth, body: body, headers: { "Content-Type" => "application/json" }
+    HTTParty.post "https://api.upcloud.com/1.2/#{action}",
+                  basic_auth: @auth,
+                  body: body,
+                  headers: { "Content-Type" => "application/json" }
   end
 
   def put(action, body = "")
-    HTTParty.put "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth, body: body, headers: { "Content-Type" => "application/json" }
+    HTTParty.put "https://api.upcloud.com/1.2/#{action}",
+                 basic_auth: @auth,
+                 body: body,
+                 headers: { "Content-Type" => "application/json" }
   end
 
-  def delete(action, _body = "")
-    HTTParty.delete "https://api.upcloud.com/1.2/#{action}", basic_auth: @auth, headers: { "Content-Type" => "application/json" }
+  def delete(action)
+    HTTParty.delete "https://api.upcloud.com/1.2/#{action}",
+                    basic_auth: @auth,
+                    headers: { "Content-Type" => "application/json" }
   end
 end
