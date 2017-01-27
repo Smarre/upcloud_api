@@ -19,7 +19,7 @@ class UpcloudApi
   #
   # Calls GET /1.2/server
   #
-  # Returns true in success, false if not
+  # Returns true in success, false if not.
   def login
     response = get "server"
     response.code == 200
@@ -27,7 +27,13 @@ class UpcloudApi
 
   # Returns available server configurations.
   #
-  # Calls GET /1.2/server_size
+  # Calls GET /1.2/server_size.
+  #
+  # Returns array of server size hashes:
+  #   {
+  #     "core_number": "1",
+  #     "memory_amount": "512"
+  #   }
   def server_configurations
     response = get "server_size"
     response["server_sizes"]["server_size"]
@@ -36,15 +42,17 @@ class UpcloudApi
   # Returns available credits.
   #
   # Calls GET /1.2/acccount
+  #
+  # Returns available credits in the account as a string.
   def account_information
     response = get "account"
     data = JSON.parse response.body
     data["account"]["credits"]
   end
 
-  # Lists servers associated with the account
+  # Lists servers associated with the account.
   #
-  # Calls GET /1.2/server
+  # Calls GET /1.2/server.
   #
   # Returns array of servers with following values or empty array if no servers found.
   # - zone
@@ -62,7 +70,7 @@ class UpcloudApi
 
   # Shows details of a server.
   #
-  # Calls GET /1.2/server/#{uuid}
+  # Calls GET /1.2/server/_uuid_.
   #
   # @param uuid from UpcloudApi#servers
   def server_details(uuid)
@@ -71,9 +79,9 @@ class UpcloudApi
     data
   end
 
-  # Lists templates available from Upcloud
+  # Lists templates available from Upcloud.
   #
-  # Calls GET /1.2/storage/template
+  # Calls GET /1.2/storage/template.
   def templates
     response = get "storage/template"
     data = JSON.parse response.body
@@ -82,21 +90,21 @@ class UpcloudApi
 
   # Creates new server from template.
   #
-  # Calls POST /1.2/server
+  # Calls POST /1.2/server.
   #
   # Storage devices should be array of hashes containing following data:
   #
   #   {
-  #   "action" => "clone" # Can be "create", "clone" or "attach"
-  #   "storage" => template_uuid, # Should be passed only for "clone" or "attach"
-  #   "title" => disk_name # Name of the storage,
-  #   "tier" => "maxiops" # No sense using HDD any more
+  #     "action"  => "clone"          # Can be "create", "clone" or "attach"
+  #     "storage" => template_uuid,   # Should be passed only for "clone" or "attach"
+  #     "title"   => disk_name,       # Name of the storage,
+  #     "tier"    => "maxiops"        # No sense using HDD any more
   #   }
   #
   # ip_addresses should be an array containing :public, :private and/or :ipv6. It defaults to
   # :all, which means the server will get public IPv4, private IPv4 and public IPv6 addresses.
   #
-  # Returns HTTParty response
+  # Returns HTTParty response object.
   def create_server(zone: "fi-hel1", title:, hostname:, core_number: 1,
                     memory_amount: 1024, storage_devices:, ip_addresses: :all)
     data = {
@@ -129,10 +137,12 @@ class UpcloudApi
   #
   # In order to modify a server, the server must be stopped first.
   #
-  # Calls PUT /1.2/server/#{uuid}
+  # Calls PUT /1.2/server/_uuid_.
   #
   # @param server_uuid [String] UUID of the server that will be modified.
   # @param params [Hash] Hash of params that will be passed to be changed.
+  #
+  # Returns HTTParty response object.
   def modify_server(server_uuid, params)
     data = { "server" => params }
     json = JSON.generate data
@@ -145,7 +155,9 @@ class UpcloudApi
   #
   # In order to delete a server, the server must be stopped first.
   #
-  # Calls DELETE /1.2/server/#{uuid}
+  # Calls DELETE /1.2/server/_uuid_.
+  #
+  # Returns HTTParty response object.
   def delete_server(server_uuid)
     response = delete "server/#{server_uuid}"
 
@@ -154,18 +166,20 @@ class UpcloudApi
 
   # Starts server that is shut down.
   #
-  # Calls POST /1.2/server/#{uuid}/start
+  # Calls POST /1.2/server/_uuid_/start.
   #
-  # @param server_uuid UUID of the server
+  # @param server_uuid UUID of the server.
+  #
+  # Returns HTTParty response object.
   def start_server(server_uuid)
     response = post "server/#{server_uuid}/start"
 
     response
   end
 
-  # Shuts down a server that is currently running
+  # Shuts down a server that is currently running.
   #
-  # Calls POST /1.2/server/#{uuid}/stop
+  # Calls POST /1.2/server/_uuid_/stop.
   #
   # Hard shutdown means practically same as taking the power cable
   # off from the computer. Soft shutdown sends ACPI signal to the server,
@@ -206,9 +220,9 @@ class UpcloudApi
     end
   end
 
-  # Restarts a server that is currently running
+  # Restarts a server that is currently running.
   #
-  # Calls POST /1.2/server/#{uuid}/restart
+  # Calls POST /1.2/server/_uuid_/restart.
   #
   # Hard shutdown means practically same as taking the power cable
   # off from the computer. Soft shutdown sends ACPI signal to the server,
@@ -224,8 +238,9 @@ class UpcloudApi
   # @param timeout_action What will happen when timeout happens.
   # :destroy hard stops the server and :ignore stops the operation
   # if timeout happens. Default is :ignore.
-  def restart_server(server_uuid, type: :soft, timeout: nil,
-                     timeout_action: :ignore)
+  #
+  # Returns HTTParty response object.
+  def restart_server(server_uuid, type: :soft, timeout: nil, timeout_action: :ignore)
     data = {
       "restart_server" => {
         "stop_type" => type.to_s,
@@ -243,9 +258,7 @@ class UpcloudApi
 
   # Lists all storages or storages matching to given type.
   #
-  # Calls GET /1.2/storage or /1.2/storage/#{type}.
-  #
-  # Returns array of storages, inside "storage" key in the API or empty array if none found.
+  # Calls GET /1.2/storage or /1.2/storage/_type_.
   #
   # Available types:
   # - public
@@ -256,7 +269,9 @@ class UpcloudApi
   # - template
   # - favorite
   #
-  # @param type Type of the storages to be returned on nil
+  # @param type Type of the storages to be returned on nil.
+  #
+  # Returns array of storages, inside "storage" key in the API or empty array if none found.
   def storages(type: nil)
     response = get(type && "storage/#{type}" || "storage")
     data = JSON.parse response.body
@@ -265,9 +280,9 @@ class UpcloudApi
 
   # Shows detailed information of single storage.
   #
-  # Calls GET /1.2/storage/#{uuid}
+  # Calls GET /1.2/storage/_uuid_.
   #
-  # @param storage_uuid UUID of the storage
+  # @param storage_uuid UUID of the storage.
   def storage_details(storage_uuid)
     response = get "storage/#{storage_uuid}"
     data = JSON.parse response.body
@@ -276,7 +291,7 @@ class UpcloudApi
 
   # Creates new storage.
   #
-  # Calls POST /1.2/storage
+  # Calls POST /1.2/storage.
   #
   # backup_rule should be hash with following attributes:
   # - interval # allowed values: daily / mon / tue / wed / thu / fri / sat / sun
@@ -291,6 +306,8 @@ class UpcloudApi
   # with the server
   # @param backup_rule Hash of backup information. If not given, no
   # backups will be automatically created.
+  #
+  # Returns HTTParty response object.
   def create_storage(size:, tier: "maxiops", title:, zone: "fi-hel1",
                      backup_rule: nil)
     data = {
@@ -311,7 +328,7 @@ class UpcloudApi
 
   # Modifies existing storage.
   #
-  # Calls PUT /1.2/storage/#{uuid}
+  # Calls PUT /1.2/storage/_uuid_.
   #
   # backup_rule should be hash with following attributes:
   # - interval # allowed values: daily / mon / tue / wed / thu / fri / sat / sun
@@ -323,6 +340,8 @@ class UpcloudApi
   # @param title Name of the disk
   # @param backup_rule Hash of backup information. If not given, no
   # backups will be automatically created.
+  #
+  # Returns HTTParty response object.
   def modify_storage(storage_uuid, size:, title:, backup_rule: nil)
     data = {
       "storage" => {
@@ -343,7 +362,7 @@ class UpcloudApi
   #
   # This operation is asynchronous.
   #
-  # Calls POST /1.2/storage/#{uuid}/clone
+  # Calls POST /1.2/storage/_uuid_/clone.
   #
   # @param storage_uuid UUID of the storage that will be modified
   # @param tier Type of the disk. maxiops is SSD powered disk, other
@@ -351,6 +370,8 @@ class UpcloudApi
   # @param title Name of the disk
   # @param zone Where the disk will reside. Needs to be within same zone
   # with the server
+  #
+  # Returns HTTParty response object.
   def clone_storage(storage_uuid, zone: "fi-hel1", title:, tier: "maxiops")
     data = {
       "storage" => {
@@ -371,10 +392,12 @@ class UpcloudApi
   #
   # This operation is asynchronous.
   #
-  # Calls POST /1.2/storage/#{uuid}/templatize
+  # Calls POST /1.2/storage/_uuid_/templatize.
   #
   # @param storage_uuid UUID of the storage that will be templatized
   # @param title Name of the template storage
+  #
+  # Returns HTTParty response object.
   def templatize_storage(storage_uuid, title:)
     data = {
       "storage" => {
@@ -392,7 +415,7 @@ class UpcloudApi
   # Attaches a storage to a server. Server must be stopped before the
   # storage can be attached.
   #
-  # Calls POST /1.2/server/#{server_uuid}/storage/attach
+  # Calls POST /1.2/server/_server_uuid_/storage/attach.
   #
   # Valid values for address are: ide[01]:[01] / scsi:0:[0-7] / virtio:[0-7]
   #
@@ -401,6 +424,8 @@ class UpcloudApi
   # @param type Type of the disk. Valid values are "disk" and "cdrom".
   # @param address Address where the disk will be attached to. Defaults
   # to next available address.
+  #
+  # Returns HTTParty response object.
   def attach_storage(server_uuid, storage_uuid:, type: "disk", address: nil)
     data = {
       "storage_device" => {
@@ -420,10 +445,12 @@ class UpcloudApi
   # Detaches storage from a server. Server must be stopped before the
   # storage can be detached.
   #
-  # Calls POST /1.2/server/#{server_uuid}/storage/detach
+  # Calls POST /1.2/server/_server_uuid_/storage/detach.
   #
   # @param server_uuid UUID of the server from which to detach the storage.
   # @param address Address where the storage that will be detached resides.
+  #
+  # Returns HTTParty response object.
   def detach_storage(server_uuid, address:)
     data = {
       "storage_device" => {
@@ -442,10 +469,12 @@ class UpcloudApi
   #
   # This operation is asynchronous.
   #
-  # Calls /1.2/storage/#{uuid}/backup
+  # Calls /1.2/storage/_uuid_/backup
   #
   # @param storage_uuid UUID of the storage to be backed-up
   # @param title Name of the backup
+  #
+  # Returns HTTParty response object.
   def create_backup(storage_uuid, title:)
     data = {
       "storage" => {
@@ -464,31 +493,37 @@ class UpcloudApi
   #
   # If the storage is attached to server, the server must first be stopped.
   #
-  # Calls /1.2/storage/#{backup_uuid}/restore.
+  # Calls /1.2/storage/_backup_uuid_/restore.
   #
   # @param backup_uuid UUID of the backup
+  #
+  # Returns HTTParty response object.
   def restore_backup(backup_uuid)
     response = post "storage/#{backup_uuid}/restore"
 
     response
   end
 
-  # Adds storage to favorites
+  # Adds storage to favorites.
   #
-  # Calls POST /1.2/storage/#{storage_uuid}/favorite.
+  # Calls POST /1.2/storage/_storage_uuid_/favorite.
   #
   # @param storage_uuid UUID of the storage to be included in favorites
+  #
+  # Returns HTTParty response object.
   def favorite_storage(storage_uuid)
     response = post "storage/#{storage_uuid}/favorite"
 
     response
   end
 
-  # Removes storage to favorites
+  # Removes storage to favorites.
   #
-  # Calls POST /1.2/storage/#{storage_uuid}/favorite.
+  # Calls POST /1.2/storage/_storage_uuid_/favorite.
   #
   # @param storage_uuid UUID of the storage to be removed from favorites
+  #
+  # Returns HTTParty response object.
   def defavorite_storage(storage_uuid)
     response = delete "storage/#{storage_uuid}/favorite"
 
@@ -502,6 +537,8 @@ class UpcloudApi
   # Backups will not be deleted.
   #
   # @param storage_uuid UUID of the storage that will be deleted.
+  #
+  # Returns HTTParty response object.
   def delete_storage(storage_uuid)
     response = delete "storage/#{storage_uuid}"
 
