@@ -73,10 +73,64 @@ class UpcloudApi
   # Calls GET /1.2/server/_uuid_.
   #
   # @param uuid from UpcloudApi#servers
+  #
+  # Returns hash of server details or nil:
+  #   {
+  #    "boot_order"         => "cdrom,disk",
+  #    "core_number"        => "3",
+  #    "firewall"           => "off",
+  #    "hostname"           => "dummy",
+  #    "ip_addresses"       => {
+  #      "ip_address" => [
+  #        {
+  #          "access" => "private",
+  #          "address"            => "192.168.0.1",
+  #         "family"             => "IPv4"
+  #        },
+  #        {
+  #          "access"            => "public",
+  #          "address"            => "::1",
+  #          "family"             => "IPv6"
+  #        },
+  #        {
+  #          "access"            => "public",
+  #          "address"            => "198.51.100.1",
+  #          "family"             => "IPv4"
+  #        }
+  #      ]
+  #    },
+  #    "license"            => 0,
+  #    "memory_amount"      => "3072",
+  #    "nic_model"          => "virtio",
+  #    "plan"               => "custom",
+  #    "state"              => "stopped",
+  #    "storage_devices"    => {
+  #      "storage_device" => [
+  #        {
+  #          "address" => "virtio:1",
+  #          "storage"            => "storage_uuid",
+  #          "storage_size"       => 10,
+  #          "storage_title"      => "Disk name",
+  #          "type"               => "disk"
+  #        }
+  #      ]
+  #    },
+  #    "tags"               => {"tag" => []},
+  #    "timezone"           => "UTC",
+  #    "title"              => "Server name",
+  #    "uuid"               => "uuid",
+  #    "video_model"        => "cirrus",
+  #    "vnc"                => "off",
+  #    "vnc_password"       => "1234",
+  #    "zone"               => "de-fra1"
+  #   }
   def server_details(uuid)
     response = get "server/#{uuid}"
     data = JSON.parse response.body
-    data
+
+    return nil if data["server"].nil?
+
+    data["server"]
   end
 
   # Lists templates available from Upcloud.
@@ -216,8 +270,8 @@ class UpcloudApi
     Timeout.timeout 300 do
       loop do
         details = server_details server_uuid
-        return response if details["server"].nil?
-        return response if details["server"]["state"] == "stopped"
+        return response if details.nil?
+        return response if details["state"] == "stopped"
       end
     end
 
