@@ -149,12 +149,23 @@ class UpcloudApi
   # @param plan [String] Preconfigured plan for the server. If nil, a custom plan will be created from input data, otherwise this overrides custom configuration.
   #   Predefined plans can be fetched with {#plans}.
   #
+  # login_user should be following hash or nil:
+  #   {
+  #     "username": "upclouduser",
+  #     "ssh_keys": {
+  #       "ssh_key": [
+  #          "ssh-rsa AAAAB3NzaC1yc2EAA[...]ptshi44x user@some.host",
+  #          "ssh-dss AAAAB3NzaC1kc3MAA[...]VHRzAA== someuser@some.other.host"
+  #        ]
+  #     }
+  #   }
+  #
   # ip_addresses should be an array containing :public, :private and/or :ipv6. It defaults to
   # :all, which means the server will get public IPv4, private IPv4 and public IPv6 addresses.
   #
   # Returns HTTParty response object.
   def create_server(zone: "fi-hel1", title:, hostname:, core_number: 1,
-                    memory_amount: 1024, storage_devices:, ip_addresses: :all, plan: nil)
+                    memory_amount: 1024, storage_devices:, ip_addresses: :all, plan: nil, login_user: nil)
     data = {
       "server" => {
         "zone" => zone,
@@ -179,6 +190,10 @@ class UpcloudApi
 
       data["server"]["ip_addresses"] = {}
       data["server"]["ip_addresses"]["ip_address"] = ips
+    end
+
+    unless login_user.nil?
+        data["login_user"] = login_user
     end
 
     json = JSON.generate data

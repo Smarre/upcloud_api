@@ -8,6 +8,7 @@
 * Removed templates method. storages(type: "template") can be used instead. (Samu Voutilainen)
 * Added plan option to create_server() (Samu Voutilainen)
 * Added plans() for getting preconfigured plans (Samu Voutilainen)
+* Added login_user option to create_server() (Samu Voutilainen)
 
 === 1.5.0 / 2016-04-22
 
