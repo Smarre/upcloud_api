@@ -619,6 +619,26 @@ class UpcloudApi
     response
   end
 
+  # Lists available predefined plans that can be used to create a server.
+  #
+  # Returns Array of plan hashes:
+  #   [
+  #    {
+  #      "core_number" : 1,
+  #      "memory_amount" : 1024,
+  #      "name" : "1xCPU-1GB",
+  #      "public_traffic_out" : 2048,
+  #      "storage_size" : 30,
+  #      "storage_tier" : "maxiops"
+  #    }
+  #   ]
+  def plans
+    response = get "plan"
+
+    data = JSON.parse response.body
+    data["plans"]["plan"]
+  end
+
   private
 
   def get(action)
