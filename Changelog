@@ -2,6 +2,7 @@
 
 * Changed servers method to return storages inside an array instead of { "storages" => { "storage" => [] } } hash. (Samu Voutilainen)
 * Improved documentation (Samu Voutilainen)
+* Changed storage_details() to return hash without wrapper hash (Samu Voutilainen)
 
 === 1.5.0 / 2016-04-22
 

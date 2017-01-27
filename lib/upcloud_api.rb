@@ -283,10 +283,27 @@ class UpcloudApi
   # Calls GET /1.2/storage/_uuid_.
   #
   # @param storage_uuid UUID of the storage.
+  #
+  # Returns hash of following storage details or nil:
+  #   {
+  #     "access"  => "public",
+  #     "license" => 0,
+  #     "servers" => {
+  #         "server"=> []
+  #       },
+  #     "size"    => 1,
+  #     "state"   => "online",
+  #     "title"   => "Windows Server 2003 R2 Standard (CD 1)",
+  #     "type"    => "cdrom",
+  #     "uuid"    => "01000000-0000-4000-8000-000010010101"
+  #   }
   def storage_details(storage_uuid)
     response = get "storage/#{storage_uuid}"
     data = JSON.parse response.body
-    data
+
+    return nil if data["storage"].nil?
+
+    data["storage"]
   end
 
   # Creates new storage.
