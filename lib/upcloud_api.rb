@@ -46,7 +46,7 @@ class UpcloudApi
   #
   # Calls GET /1.2/server
   #
-  # Returns array of servers with values
+  # Returns array of servers with following values or empty array if no servers found.
   # - zone
   # - core_number
   # - title

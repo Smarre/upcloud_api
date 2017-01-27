@@ -1,6 +1,7 @@
 === 2.0.0 / 2017-01-27
 
 * Changed servers method to return storages inside an array instead of { "storages" => { "storage" => [] } } hash. (Samu Voutilainen)
+* Improved servers method’s documentation
 
 === 1.5.0 / 2016-04-22
 
