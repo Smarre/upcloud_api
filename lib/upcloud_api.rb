@@ -143,25 +143,33 @@ class UpcloudApi
   #     "action"  => "clone"          # Can be "create", "clone" or "attach"
   #     "storage" => template_uuid,   # Should be passed only for "clone" or "attach"
   #     "title"   => disk_name,       # Name of the storage,
-  #     "tier"    => "maxiops"        # No sense using HDD any more
+  #     "tier"    => "maxiops",       # No sense using HDD any more
   #   }
+  #
+  # @param plan [String] Preconfigured plan for the server. If nil, a custom plan will be created from input data, otherwise this overrides custom configuration.
+  #   Predefined plans can be fetched with {#plans}.
   #
   # ip_addresses should be an array containing :public, :private and/or :ipv6. It defaults to
   # :all, which means the server will get public IPv4, private IPv4 and public IPv6 addresses.
   #
   # Returns HTTParty response object.
   def create_server(zone: "fi-hel1", title:, hostname:, core_number: 1,
-                    memory_amount: 1024, storage_devices:, ip_addresses: :all)
+                    memory_amount: 1024, storage_devices:, ip_addresses: :all, plan: nil)
     data = {
       "server" => {
         "zone" => zone,
         "title" => title,
         "hostname" => hostname,
-        "core_number" => core_number,
-        "memory_amount" => memory_amount,
         "storage_devices" => { "storage_device" => storage_devices }
       }
     }
+
+    if plan.nil?
+        data["server"]["core_number"] = core_number
+        data["server"]["memory_amount"] = memory_amount
+    else
+        data["server"]["plan"] = plan
+    end
 
     if ip_addresses != :all
       ips = []

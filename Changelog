@@ -6,6 +6,7 @@
 * Ensured stop_server will return nil in case of error in stopping (Samu Voutilainen)
 * Changed server_details() to return details hash directly and documented the method properly (Samu Voutilainen)
 * Removed templates method. storages(type: "template") can be used instead. (Samu Voutilainen)
+* Added plan option to create_server() (Samu Voutilainen)
 
 === 1.5.0 / 2016-04-22
 
