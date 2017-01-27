@@ -243,7 +243,9 @@ class UpcloudApi
 
   # Lists all storages or storages matching to given type.
   #
-  # Calls GET /1.2/storage or /1.2/storage/#{type}
+  # Calls GET /1.2/storage or /1.2/storage/#{type}.
+  #
+  # Returns array of storages, inside "storage" key in the API or empty array if none found.
   #
   # Available types:
   # - public
@@ -258,7 +260,7 @@ class UpcloudApi
   def storages(type: nil)
     response = get(type && "storage/#{type}" || "storage")
     data = JSON.parse response.body
-    data
+    data["storages"]["storage"]
   end
 
   # Shows detailed information of single storage.
