@@ -197,6 +197,8 @@ class UpcloudApi
   #
   # Raises Timeout::Error in case server does not shut down in 300
   # seconds in non-asynchronous mode.
+  #
+  # Returns HTTParty response object if server was removed successfully or request is asynchronous and nil otherwise
   def stop_server(server_uuid, type: :soft, timeout: nil, asynchronous: false)
     data = {
       "stop_server" => {
@@ -218,6 +220,8 @@ class UpcloudApi
         return response if details["server"]["state"] == "stopped"
       end
     end
+
+    nil
   end
 
   # Restarts a server that is currently running.
