@@ -163,9 +163,12 @@ class UpcloudApi
   # ip_addresses should be an array containing :public, :private and/or :ipv6. It defaults to
   # :all, which means the server will get public IPv4, private IPv4 and public IPv6 addresses.
   #
+  # @param other [Hash] Other optional arguments create_server API call takes. See Upcloud’s documentation for possible values.
+  #
   # Returns HTTParty response object.
   def create_server(zone: "fi-hel1", title:, hostname:, core_number: 1,
-                    memory_amount: 1024, storage_devices:, ip_addresses: :all, plan: nil, login_user: nil)
+                    memory_amount: 1024, storage_devices:, ip_addresses: :all,
+                    plan: nil, login_user: nil, other: nil)
     data = {
       "server" => {
         "zone" => zone,
@@ -194,6 +197,10 @@ class UpcloudApi
 
     unless login_user.nil?
         data["login_user"] = login_user
+    end
+
+    unless other.nil?
+        data.merge! other
     end
 
     json = JSON.generate data
