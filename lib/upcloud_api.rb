@@ -133,15 +133,6 @@ class UpcloudApi
     data["server"]
   end
 
-  # Lists templates available from Upcloud.
-  #
-  # Calls GET /1.2/storage/template.
-  def templates
-    response = get "storage/template"
-    data = JSON.parse response.body
-    data
-  end
-
   # Creates new server from template.
   #
   # Calls POST /1.2/server.
