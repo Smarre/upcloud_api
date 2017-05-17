@@ -1,7 +1,7 @@
 # upcloud_api
 
-[Homepage](https://github.com/Smarre/upcloud_api)
-[Documentation](http://www.rubydoc.info/gems/upcloud_api)
+- [Homepage](https://github.com/Smarre/upcloud_api)
+- [Documentation](http://www.rubydoc.info/gems/upcloud_api)
 
 ## Description
 
@@ -10,14 +10,11 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 
 ## Features
 
-* Basic server management calls done
-* Implements API version 1.2.
+* Implements Upcloud API version 1.2.
 
 ### Known problems
 
 * Some actions are still missing, most notably IP actions
-* Most actions are mostly just wrappers over the API for convenience,
-with no good documentation or integration.
 * Load/eject CDROM not done.
 
 ## Synopsis
@@ -37,17 +34,7 @@ with no good documentation or integration.
 
 ## Developers
 
-I’ve only created actions I personally need, for my own project. In case you
-need some other actions, please open a pull request and I’ll merge it,
-or if you have greater plans for this project, I can make you co-author
-or just transfer the project to you.
-
-## API account credentials
-
-Export your UpCloud API account username and password as environment variables:
-
-    export UPCLOUD_USERNAME="XXX"
-    export UPCLOUD_PASSWORD="YYY"
+Contributions are accepted :)
 
 ## Testing
 
