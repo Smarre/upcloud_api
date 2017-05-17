@@ -14,7 +14,6 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 
 ### Known problems
 
-* Some actions are still missing, most notably IP actions
 * Load/eject CDROM not done.
 
 ## Synopsis

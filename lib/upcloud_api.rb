@@ -894,6 +894,105 @@ class UpcloudApi
     post "server/#{server_uuid}/untag/#{tag}"
   end
 
+  # Lists all IP addresses visible to user specified in contructor along with
+  # their information and UUIDs of the servers they are bound to.
+  #
+  # Calls GET /1.2/ip_address.
+  #
+  # @return [Hash] details of IP addresses
+  # @example Return hash
+  #   [
+  #     {
+  #       "access": "private",
+  #       "address": "10.0.0.0",
+  #       "family": "IPv4",
+  #       "ptr_record": "",
+  #       "server": "0053cd80-5945-4105-9081-11192806a8f7"
+  #     }
+  #   ]
+  def ip_addresses
+    response = get "ip_address"
+    body = JSON.parse response.body
+    body["ip_addresses"]["ip_address"]
+  end
+
+  # Gives details of specific IP address.
+  #
+  # Calls GET /1.2/ip_address/_ip_address_.
+  #
+  # @param ip_address [String] IP address to get details for.
+  #
+  # @return [Hash] details of an IP address
+  # @example Return hash
+  #   {
+  #     "access": "public",
+  #     "address": "0.0.0.0"
+  #     "family": "IPv4",
+  #     "part_of_plan": "yes",
+  #     "ptr_record": "test.example.com",
+  #     "server": "009d64ef-31d1-4684-a26b-c86c955cbf46",
+  #   }
+  def ip_address_details ip_address
+    response = get "ip_address/#{ip_address}"
+    body = JSON.parse response.body
+    body["ip_address"]
+  end
+
+  # Adds new IP address to given server.
+  #
+  # Calls POST /1.2/ip_address.
+  #
+  # @note To add a new IP address, the server must be stopped.
+  # @note Only public IP addresses can be added. There is always exactly one private IP address per server.
+  # @note There is a maximum of five public IP addresses per server.
+  #
+  # @param server_uuid [String] UUID of the server
+  # @param family ["IPv4", "IPv6"] Type of the IP address.
+  #
+  # @see https://www.upcloud.com/api/1.2.3/10-ip-addresses/#assign-ip-address Upcloud’s API
+  #
+  # @return HTTParty response object.
+  def new_ip_address_to_server server_uuid, family: "IPv4"
+    data = {
+      "ip_address" => {
+        "family" => family,
+        "server" => server_uuid
+      }
+    }
+    json = JSON.generate data
+
+    post "ip_address", json
+  end
+
+  # Changes given IP address’s PTR record.
+  #
+  # Calls PUT /1.2/ip_address.
+  #
+  # @note Can only be set to public IP addresses.
+  #
+  # @return HTTParty response object.
+  def change_ip_address_ptr ip_address, ptr_record
+    data = {
+      "ip_address" => {
+        "ptr_record" => ptr_record
+      }
+    }
+    json = JSON.generate data
+
+    put "ip_address/#{ip_address}", json
+  end
+
+  # Removes IP address (from a server).
+  #
+  # Calls DELETE /1.2/_ip_address_.
+  #
+  # @todo I’m fairly sure the API call is wrong, but this is what their documentation says. Please tell me if you test if this one works.
+  #
+  # @return HTTParty response object.
+  def remove_ip_address ip_address
+    delete "#{ip_address}"
+  end
+
   private
 
   def get(action)
