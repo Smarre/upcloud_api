@@ -1004,6 +1004,17 @@ class UpcloudApi
     body["prices"]["zone"]
   end
 
+  # Lists available zones and their details.
+  #
+  # @see https://www.upcloud.com/api/1.2.3/5-zones/ Upcloud’s zone documentation for more details
+  #
+  # @return [Array] list of zones
+  def zones
+    response = get "zone"
+    body = JSON.parse response.body
+    body["zones"]["zone"]
+  end
+
   private
 
   def get(action)
