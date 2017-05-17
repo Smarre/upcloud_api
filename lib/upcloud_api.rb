@@ -661,6 +661,95 @@ class UpcloudApi
     data["plans"]["plan"]
   end
 
+  # Lists firewall rules of a server.
+  #
+  # Calls POST /1.2/server/_uuid_/firewall_rule.
+  #
+  # @param server_uuid [String] UUID of server
+  #
+  # Returns Array of firewall rules:
+  #   [
+  #    {
+  #      "action": "accept",
+  #      "destination_address_end": "",
+  #      "destination_address_start": "",
+  #      "destination_port_end": "80",
+  #      "destination_port_start": "80",
+  #      "direction": "in",
+  #      "family": "IPv4",
+  #      "icmp_type": "",
+  #      "position": "1",
+  #      "protocol": "",
+  #      "source_address_end": "",
+  #      "source_address_start": "",
+  #      "source_port_end": "",
+  #      "source_port_start": ""
+  #    }
+  #   ]
+  def firewall_rules server_uuid
+    response = get "server/#{server_uuid}/firewall_rule"
+
+    data = JSON.parse response.body
+    data["firewall_rules"]["firewall_rule"]
+  end
+
+
+  # Creates new firewall rule to a server specified by _server_uuid_.
+  #
+  # Calls POST /1.2/server/_server_uuid_/firewall_rule.
+  #
+  # _params_ should contain data as documented in Upcloud’s API:
+  # https://www.upcloud.com/api/1.2.3/11-firewall/#create-firewall-rule .
+  # It should not contain "firewall_rule" wrapper hash, but only the values inside a hash.
+  #
+  # For example:
+  #   {
+  #    "position": "1",
+  #    "direction": "in",
+  #    "family": "IPv4",
+  #    "protocol": "tcp",
+  #    "source_address_start": "192.168.1.1",
+  #    "source_address_end": "192.168.1.255",
+  #    "source_port_end": "",
+  #    "source_port_start": "",
+  #    "destination_address_start": "",
+  #    "destination_address_end": "",
+  #    "destination_port_start": "22",
+  #    "destination_port_end": "22",
+  #    "icmp_type": "",
+  #    "action": "accept"
+  #   }
+  #
+  # @param server_uuid [String] UUID of server
+  # @param params [Hash] Parameters for the firewall rule.
+  #
+  # Returns HTTParty response object.
+  def create_firewall_rule server_uuid, params
+    data = {
+      "firewall_rule" => params
+    }
+
+    json = JSON.generate data
+
+    response = post "server/#{server_uuid}/firewall_rule", json
+
+    response
+  end
+
+  # Removes a firewall rule at position _position_.
+  #
+  # A position of a rule can be seen with firewall_rules().
+  #
+  # @param server_uuid [String] UUID of server
+  # @param position [Integer] position of the rule in rule list that will be removed
+  #
+  # Returns HTTParty response object.
+  def remove_firewall_rule server_uuid, position
+    response = delete "server/#{server_uuid}/firewall_rule/#{position}"
+
+    response
+  end
+
   private
 
   def get(action)

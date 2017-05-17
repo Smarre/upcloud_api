@@ -1,3 +1,7 @@
+=== 2.1.0 / 2017-XX-XX
+
+* Added firewall API methods (Samu Voutilainen)
+
 === 2.0.0 / 2017-01-27
 
 * Changed servers method to return storages inside an array instead of { "storages" => { "storage" => [] } } hash. (Samu Voutilainen)
