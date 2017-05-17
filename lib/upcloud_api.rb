@@ -993,6 +993,17 @@ class UpcloudApi
     delete "#{ip_address}"
   end
 
+  # Lists prices for specific components that can be tied to a server.
+  #
+  # @see https://www.upcloud.com/api/1.2.3/4-pricing/ Upcloud’s documentation for more details.
+  #
+  # @return [Array] list of prices per component
+  def prices
+    response = get "price"
+    body = JSON.parse response.body
+    body["prices"]["zone"]
+  end
+
   private
 
   def get(action)
