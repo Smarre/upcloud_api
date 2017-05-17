@@ -10,11 +10,12 @@ meant for programmable maintenance of virtual private servers in Upcloud’s sys
 
 ## Features
 
-* Implements Upcloud API version 1.2.
+* Implements Upcloud API version 1.2.3.
 
 ### Known problems
 
 * Load/eject CDROM not done.
+* [timezones API method](https://www.upcloud.com/api/1.2.3/6-timezones/) is not implemented.
 
 ## Synopsis
 
