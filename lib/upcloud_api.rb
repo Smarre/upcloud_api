@@ -738,6 +738,8 @@ class UpcloudApi
 
   # Removes a firewall rule at position _position_.
   #
+  # Calls DELETE /1.2/server/_server_uuid_/firewall_rule/_position_.
+  #
   # A position of a rule can be seen with firewall_rules().
   #
   # @param server_uuid [String] UUID of server
@@ -748,6 +750,139 @@ class UpcloudApi
     response = delete "server/#{server_uuid}/firewall_rule/#{position}"
 
     response
+  end
+
+  # Lists all tags with UUIDs of servers they are attached to.
+  #
+  # Calls GET /1.2/tags.
+  #
+  # Returns Array of tag hashes:
+  #   [
+  #    {
+  #      "description": "Development servers",
+  #      "name": "DEV",
+  #      "servers": {
+  #        "server": [
+  #          "0077fa3d-32db-4b09-9f5f-30d9e9afb565"
+  #        ]
+  #      }
+  #    }
+  #   ]
+  def tags
+    response = get "tags"
+
+    data = JSON.parse response.body
+    data["tags"]["tag"]
+  end
+
+  # Creates new tag.
+  #
+  # Calls POST /1.2/tag.
+  #
+  # _params_ should contain following data
+  #   name        *required*
+  #   description
+  #   servers     *required*
+  #
+  # @example _params_ hash’s contents
+  #   {
+  #     "name": "DEV", # required
+  #     "description": "Development servers",
+  #     "servers":  [
+  #       "0077fa3d-32db-4b09-9f5f-30d9e9afb565",
+  #       ".."
+  #     ]
+  #   }
+  #
+  # @example Response body
+  #   {
+  #     "name": "DEV",
+  #     "description": "Development servers",
+  #     "servers": {
+  #       "server": [
+  #         "0077fa3d-32db-4b09-9f5f-30d9e9afb565"
+  #       ]
+  #     }
+  #   }
+  #
+  # @param server_uuid [String] UUID of server
+  # @param params [Hash] Parameters for the firewall rule.
+  #
+  # @return Tag parameters as Hash or HTTParty response object in case of error.
+  def create_tag server_uuid, params
+    data = {
+      "tag" => params
+    }
+    temp = data["servers"]
+    data["servers"] = { "server" => temp }
+
+    json = JSON.generate data
+
+    response = post "tag", json
+    return response unless response.code == 201
+
+    body = JSON.parse response.body
+    body["tag"]
+  end
+
+  # Modifies existing tag.
+  #
+  # Calls PUT /1.2/tag/_tag_.
+  #
+  # @note Attributes are same as with create_tag().
+  #
+  # @return Tag parameters as Hash or HTTParty response object in case of error.
+  def modify_tag tag
+    data = {
+      "tag" => params
+    }
+    temp = data["servers"]
+    data["servers"] = { "server" => temp }
+
+    json = JSON.generate data
+
+    response = put "tag/#{tag}", json
+    return response unless response.code == 200
+
+    body = JSON.parse response.body
+    body["tag"]
+  end
+
+  # Deletes existing tag.
+  #
+  # Calls DELETE /1.2/tag/_tag_.
+  #
+  # @return HTTParty response object.
+  def delete_tag tag
+    delete "tag/#{tag}"
+  end
+
+  # Attaches one or more tags to a server.
+  #
+  # Calls POST /1.2/server/_uuid_/tag/_tags_.
+  #
+  # @param server_uuid [String] UUID of the server
+  # @param tags [Array, String] Tags that will be attached to the server
+  #
+  # @return HTTParty response object.
+  def add_tag_to_server server_uuid, tags
+    tag = (tags.respond_to? :join && tags.join(",") || tags)
+
+    post "server/#{server_uuid}/tag/#{tag}"
+  end
+
+  # Removes one or more tags to a server.
+  #
+  # Calls POST /1.2/server/_uuid_/untag/_tags_.
+  #
+  # @param server_uuid [String] UUID of the server
+  # @param tags [Array, String] Tags that will be removed from the server
+  #
+  # @return HTTParty response object.
+  def remove_tag_from_server server_uuid, tags
+    tag = (tags.respond_to? :join && tags.join(",") || tags)
+
+    post "server/#{server_uuid}/untag/#{tag}"
   end
 
   private
