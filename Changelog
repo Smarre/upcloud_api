@@ -1,3 +1,7 @@
+=== 2.1.1 / XXXX-XX-XX
+
+* Fixed tags() method (Samu Voutilainen)
+
 === 2.1.0 / 2017-05-17
 
 * Added firewall API methods (Samu Voutilainen)

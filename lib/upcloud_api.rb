@@ -778,7 +778,7 @@ class UpcloudApi
   #    }
   #   ]
   def tags
-    response = get "tags"
+    response = get "tag"
 
     data = JSON.parse response.body
     data["tags"]["tag"]
